@@ -3,3 +3,6 @@ obj/
 .vs/
 *.user
 *.suo
+Postman/.postman/
+Postman/API de citas médicas/
+Postman/*.environment.yaml
