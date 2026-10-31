@@ -1,0 +1,105 @@
+{
+  "info": {
+    "name": "API de citas médicas - Evidencias del informe",
+    "description": "Secuencia manual para obtener evidencias de todos los endpoints y resultados HTTP del informe.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5095"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Registrar cita para evidencia",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pacienteId\": 1,\n  \"medicoId\": 2,\n  \"fechaHoraInicio\": \"2032-05-12T09:00:00\",\n  \"duracionMinutos\": 45,\n  \"motivo\": \"Evaluación médica general\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/citas"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Devuelve 201', function () { pm.response.to.have.status(201); });",
+            "pm.collectionVariables.set('citaEvidenciaId', pm.response.json().id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "2. Consultar todas las citas",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/citas" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Devuelve 200', function () { pm.response.to.have.status(200); });"] } }]
+    },
+    {
+      "name": "3. Consultar cita creada",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/citas/{{citaEvidenciaId}}" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Devuelve 200', function () { pm.response.to.have.status(200); });"] } }]
+    },
+    {
+      "name": "4. Actualizar cita creada",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pacienteId\": 1,\n  \"medicoId\": 2,\n  \"fechaHoraInicio\": \"2032-05-12T10:30:00\",\n  \"duracionMinutos\": 30,\n  \"motivo\": \"Seguimiento de evaluación\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/citas/{{citaEvidenciaId}}"
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Devuelve 204', function () { pm.response.to.have.status(204); });"] } }]
+    },
+    {
+      "name": "5. Consultar cita actualizada",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/citas/{{citaEvidenciaId}}" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Devuelve 200', function () { pm.response.to.have.status(200); });", "pm.test('Devuelve el motivo actualizado', function () { pm.expect(pm.response.json().motivo).to.eql('Seguimiento de evaluación'); });"] } }]
+    },
+    {
+      "name": "6. Registrar cita con horario superpuesto",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pacienteId\": 2,\n  \"medicoId\": 2,\n  \"fechaHoraInicio\": \"2032-05-12T10:45:00\",\n  \"duracionMinutos\": 30,\n  \"motivo\": \"Control durante horario ocupado\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/citas"
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Devuelve 409', function () { pm.response.to.have.status(409); });"] } }]
+    },
+    {
+      "name": "7. Registrar cita con datos inválidos",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pacienteId\": 1,\n  \"medicoId\": 1,\n  \"fechaHoraInicio\": \"2032-05-12T15:00:00\",\n  \"duracionMinutos\": 10,\n  \"motivo\": \"x\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/citas"
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Devuelve 400', function () { pm.response.to.have.status(400); });"] } }]
+    },
+    {
+      "name": "8. Eliminar cita creada",
+      "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/citas/{{citaEvidenciaId}}" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Devuelve 204', function () { pm.response.to.have.status(204); });"] } }]
+    },
+    {
+      "name": "9. Confirmar cita eliminada",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/citas/{{citaEvidenciaId}}" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Devuelve 404', function () { pm.response.to.have.status(404); });"] } }]
+    }
+  ]
+}
